@@ -3,7 +3,7 @@
 let grid;
 let cellWidth;
 let cellHeight;
-const GRIDSIZE = 10;
+const GRIDSIZE = 50;
 let autoPlay = false;
 
 function setup() {
@@ -15,11 +15,13 @@ function setup() {
 
 function draw() {
   background(220);
+
   if (autoPlay) {
     if (frameCount % 10 === 0) {
       takeNextTurn();
     }
-}
+  }
+
   displayGrid();
 }
 
