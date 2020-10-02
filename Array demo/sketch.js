@@ -1,3 +1,5 @@
+//Terrain generation
+
 let numberOfRects = 80;
 let rectHeights = [];
 let rectWidth;

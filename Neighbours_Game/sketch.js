@@ -27,6 +27,7 @@ function mousePressed() {
   toggleCell(cellX - 1, cellY); //west
   toggleCell(cellX + 1, cellY); //east
   
+  console.log(grid[0]);
 }
 
 function toggleCell(cellX, cellY) {
