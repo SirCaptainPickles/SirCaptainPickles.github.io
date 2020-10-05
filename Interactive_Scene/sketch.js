@@ -1,43 +1,68 @@
+//Heather Grove
+//Dodging Duck
+//Dodge the incoming bombs by moving your mouse
+//
+//Extra for experts:
+//I've added a quacking sound whenever the mouse is clicked
+
+//Setting image and sound variables
 let pond, duck, quack;
 let duckScalar = 0.5;
 
-let isUsingMouse;
-let isMovingLeft, isMovingRight, isMovingUp, isMovingDown
-
+//Movement variables
 let x, y;
-let ballYPos = 0;
-let ballSpeed = 5;
 
-let startButton, useMouseButton, useKeyboardButton, tryAgainButton;
+//Bomb variables
+let numberofbombs = 10;
+let bombposX = [];
+let bombposY = [];
+let bombacceleration = [];
+let bombvelocity = [];
+let bombSize;
+
+//Time Variables
+let time = 0;
+let fallTime = 0;
+
+//Button Variables
+let startButton;
 let gameStarted = false
 
 let hit;
+let score = 0;
 
-let positions;
-let everyBall = []
 let ballColours = ["Orange", "Blue", "Purple", "Pink", "yellow"];
+let ballColour = "Orange"
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(50, 50, 255);
   
+  //Setting up initial Bombs
+  initbombpos();
+  
+  //Creating acurate falltime for resetting bombs
+  let temp00 = 0, temp01 = -20
+  while(temp01 < height) {
+    temp00 += 0.1;
+    temp01 += temp00;
+    fallTime++;
+  }
+  
   hit = false;
   
-  positions = [width / 10, width / 8, width / 4, width / 3, width / 2, width * 0.8, width * 0.65, width * 0.9]
-  
+  //Setting up variables using width and height
+  bombSize = width / 8
   x = width/2;
   y = height/ 2;
   
-  isMovingLeft = false;
-  isMovingRight = false;
-  isMovingUp = false;
-  isMovingDown = false;
-  
+  //Displaying start button
   startButton = createButton("Start Game");
-  startButton.position(width / 2, height / 2);
+  startButton.position(width / 2 - ((width / 4) / 2), height / 2 - ((height / 8) / 2));
   startButton.size(width /4, height / 8);
   startButton.mousePressed(startGame);
   
+  //Loading images and sounds
   pond = loadImage("pond.jpg");
   duck = loadImage("duck.png");
   quack = loadSound('duckQuack.mp3');
@@ -49,174 +74,126 @@ function draw() {
     imageMode(CORNERS);
     background(pond);
     
-    if (isUsingMouse) {
-        displayMouseDuck();
-        window.setInterval(makeBalls, 1000);
-    }
-    else if (!isUsingMouse) {
-      handleKeys();
-      displayKeysDuck();
-      window.setInterval(makeBalls, 1000);
-    }
+    scoreUpdate();
+    displayText();
+    
+    displayDuck();
+    displayBombs();
+    updateBombPos();
+    
+    time++;
+  }
+}
+
+//Placement and Speed for initial Bombs
+function initbombpos() {
+  for (let i =0; i < numberofbombs; i++) {
+    bombacceleration[i] = random(0.02, 0.03);
+    bombvelocity[i] = random(5, 10);
+    bombposX[i] = random(0.5, width);
+    bombposY[i] = random(-20, -0.5);
+  }
+}
+
+//Displaying bombs and checking collision
+function displayBombs() {
+  fill(ballColour);
+  
+  for (let b = 0; b < numberofbombs; b++) {
+    circle(bombposX[b], bombposY[b], bombSize)
+    
+  hit = collidePointCircle(mouseX, mouseY - duck.height * duckScalar / 2, bombposX[b], bombposY[b], bombSize);
+    
+  if (hit) {
+    endGame();
+  }
+  }
+}
+
+//Moving bombs and checking collision
+function updateBombPos() {
+  for(let r = 0; r < numberofbombs; r++) {
+    bombvelocity[r] += bombacceleration[r];
+    bombposY[r] += bombvelocity[r]
+    
+    hit = collidePointCircle(mouseX, mouseY - duck.height * duckScalar / 2, bombposX[r], bombposY[r], bombSize);
+}
+  
+  if (hit) {
+    endGame();
   }
   
-  //displayTimer();
+  //Resetting bombs to top of screen
+  if (time > fallTime) {
+    initbombpos();
+    time = 0;
+  }
 }
 
 function startGame() {
   startButton.hide();
-  
-  useMouseButton = createButton("Use Mouse");
-  useMouseButton.position(width / 8, height / 2);
-  useMouseButton.size(width /4, height / 8);
-  useMouseButton.mousePressed(useMouse);
-  
-  useKeyboardButton = createButton("Use WASD");
-  useKeyboardButton.position(width / 2, height / 2);
-  useKeyboardButton.size(width /4, height / 8);
-  useKeyboardButton.mousePressed(useKeyboard);
-
-}
-
-function useMouse() {
   noCursor();
   isUsingMouse = true;
-  frameRate(20);
-  useMouseButton.hide();
-  useKeyboardButton.hide();
   gameStarted = true;
+
 }
 
-function useKeyboard() {
-  noCursor();
-  isUsingMouse = false;
-  useMouseButton.hide();
-  useKeyboardButton.hide();
-  gameStarted = true;
-}
-
+//Ending game and displaying try again button
 function endGame() {
     gameStarted = false;
-    background('red');
+    background('Black');
+    fill(255)
+    text("GAME OVER", width / 2, height /2);
     cursor();
-  
-    //tryAgainButton = createButton("Try Again?");
-    //tryAgainButton.position(width / 2, height / 2);
-    //tryAgainButton.size(width /4, height / 8);
-    //tryAgainButton.mousePressed(tryAgain);
+    
+    tryAgainButton = createButton("Try Again?");
+    tryAgainButton.position(width / 2 - ((width / 4) / 2), height * 0.7);
+    tryAgainButton.size(width /4, height / 8);
+    tryAgainButton.mousePressed(tryAgain);
   
 }
 
+//resetting game
 function tryAgain() {
   tryAgainButton.hide();
   setup();
 }
 
-function makeBalls() {
-  // for (let xPos of positions) {
-  //   fill('green');
-  //   circle(xPos, ballYPos, width /8);
-    for (let ball of everyBall) {
-      noStroke();
-      fill(ball.theColor);
-      circle(ball.x, ball.y, ball.size);
-    }
-    
-    moveBalls()
-  
-    hit = collidePointCircle(mouseX, mouseY - duck.height * duckScalar / 2, xPos, ballYPos, width / 8);
-    
-    if (hit) {
-      endGame();
-  }
-}
-
-function spawnBall() {
-  let ball = {
-    x: random(positions),
-    y: (ballYPos),
-    size: (width / 8),
-    theColor: color(random(255), random(255), random(255), random(255)),
-  };
-  
-  everyBall.push(ball);
-}
-
-function moveBalls() {
-  ballYPos += ballSpeed
-}
-
-function displayMouseDuck() {
+function displayDuck() {
  
   imageMode(CENTER);
+  
+  //Keeping duck below half
   if (mouseY > height / 2) {
-    image(duck, pmouseX + 10, pmouseY + 10, duck.width * duckScalar, duck.height * duckScalar) ;
+    image(duck, mouseX + 10, mouseY + 10, duck.width * duckScalar, duck.height * duckScalar) ;
     
     x = mouseX;
     y = mouseY;
   }
+  
+  //Following the X of the mouse but not Y if mouse is above half
   else {
     image(duck, mouseX, y, duck.width * duckScalar, duck.height * duckScalar);
   }
-}
-
-function displayKeysDuck() {
-    imageMode(CENTER);
-    image(duck, x, y, duck.width * duckScalar, duck.height * duckScalar);
-}
-
-function handleKeys() {
- if (isMovingUp && y > width / 2) {
-   y -= 6;
- } 
-  if (isMovingDown && y < height - (duck.height * duckScalar / 2)) {
-   y += 6;
- } 
-  if (isMovingLeft && x > 0 + (duck.width * duckScalar / 2)) {
-   x -= 6;
- } 
-  if (isMovingRight && x < width - (duck.height * duckScalar / 2)) {
-   x += 6;
- } 
-}
-
-function keyPressed() {
- if (key === 'w') {
-   isMovingUp = true;
- } 
-  if (key === 's') {
-   isMovingDown = true;
- } 
-  if (key === 'a') {
-   isMovingLeft = true;
- } 
-  if (key === 'd') {
-   isMovingRight = true;
- }  
-}
-
-function keyReleased() {
- if (key === 'w') {
-   isMovingUp = false;
- } 
-  if (key === 's') {
-   isMovingDown = false;
- } 
-  if (key === 'a') {
-   isMovingLeft = false;
- } 
-  if (key === 'd') {
-   isMovingRight = false;
- }
 }
 
 function mouseClicked() {
   quack.play();
 }
 
-function displayTimer() {
-  seconds = 60;
-  
-  fill('black');
-  text('Time left:\n' + seconds, windowWidth - (windowWidth * clockScalar) - 20, windowHeight * clockScalar);
+function displayText() {
+  fill(0)
+  text("Press 'b' to change the balls colour", 0, height / 10); 
+}
+
+function keyPressed() {
+ if (key === 'b') {
+   ballColour = random(ballColours);
+ }
+}
+
+function scoreUpdate() {
+  score += 10;
+  fill(0)
+  text("SCORE:" + int(score/fallTime), width - 65, 15 )
 }
