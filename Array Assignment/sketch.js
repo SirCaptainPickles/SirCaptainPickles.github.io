@@ -8,7 +8,7 @@ let cellWidth;
 let cellHeight;
 
 //Button Variables
-let tryAgainButton, playAnotherPlayerButton, playTheComputerButton;
+let playAgainButton, playAnotherPlayerButton, playTheComputerButton;
 
 //Setting up Turn, Winning and Opponent Variables
 let isSecondPlayerHere, isPlayerOnesTurn, playerOneWon, playerTwoWon, everyoneTied;
@@ -19,18 +19,23 @@ const GRIDSIZE = 3;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  loop();
+
+  if (gameEnded === "filler") {
+    playAgainButton.hide();
+  }
 
   //Create Empty Grid
   grid = [["E","E","E"], ["E","E","E"], ["E","E","E"]];
 
   //Displaying Opponent Buttons
   playTheComputerButton = createButton("Play Against the Computer");
-  playTheComputerButton.position(width / 2 - width/ 2, height / 2 - height / 2);
+  playTheComputerButton.position(width / 8, height / 2);
   playTheComputerButton.size(width /4, height / 8);
   playTheComputerButton.mousePressed(startComputerGame);
 
   playAnotherPlayerButton = createButton("Play Against Another Player");
-  playAnotherPlayerButton.position(width / 2 - width/ 2, height / 2 - height / 2);
+  playAnotherPlayerButton.position(width / 2, height / 2);
   playAnotherPlayerButton.size(width /4, height / 8);
   playAnotherPlayerButton.mousePressed(startSecondPersonGame);
 
@@ -41,6 +46,7 @@ function setup() {
 
   cellWidth = width / grid[0].length;
   cellHeight = height / grid.length;
+
 }
 
 function draw() {
@@ -48,7 +54,7 @@ function draw() {
     background(225);
     displayGrid();
   }
-  else {
+  else if (gameEnded === true) {
     noLoop();
     background(0);
     endGame();
@@ -56,11 +62,17 @@ function draw() {
 }
 
 function startComputerGame() {
+  playTheComputerButton.hide();
+  playAnotherPlayerButton.hide();
+
   isSecondPlayerHere = false;
   gameEnded = false;
 }
 
 function startSecondPersonGame() {
+  playTheComputerButton.hide();
+  playAnotherPlayerButton.hide();
+
   isSecondPlayerHere = true;
   gameEnded = false;
 }
@@ -70,24 +82,23 @@ function checkIfGameHasEnded() {
   let isAnEmptySpot = false;
 
   //End game if Player One has Won on either diagonal 
-  // Top left to bottom Right 
+  // Top left to bottom Right X's
   if (grid[0][0] === "X" && grid[1][1] === "X" && grid[2][2] === "X") {
     playerOneWon = true;
     gameEnded = true;
   }
-  //Top right to bottom Left
+  //Top right to bottom Left X's
   if (grid[0][2] === "X" && grid[1][1] === "X" && grid[2][0] === "X") {
     playerOneWon = true;
     gameEnded = true;
   }
 
-  //End game if Player Two has Won on either diagonal 
-  // Top left to bottom Right 
+  // Top left to bottom Right O's
   if (grid[0][0] === "O" && grid[1][1] === "O" && grid[2][2] === "O") {
     playerTwoWon = true;
     gameEnded = true;
   }
-  //Top right to bottom Left
+  //Top right to bottom Left O's
   if (grid[0][2] === "O" && grid[1][1] === "O" && grid[2][0] === "O") {
     playerTwoWon = true;
     gameEnded = true;
@@ -137,11 +148,103 @@ function checkIfGameHasEnded() {
   }
 }
 
+function computersTurn() {
+  //Placing an O to stop player one from winning diagonally
+  // Top left to bottom Right 
+  if (grid[0][0] === "X" && grid[1][1] === "X") {
+    if (grid[2][2] === "E") {
+      placeAnO(2, 2);
+    }
+  }
+
+  if (grid[0][0] === "X" && grid[2][2] === "X") {
+    if (grid[1][1] === "E") {
+      placeAnO(1,1);
+    }
+  }
+
+  if (grid[1][1] === "X" && grid[2][2] === "X") {
+    if (grid[0][0] === "E") {
+      placeAnO(0, 0);
+    }
+  }
+
+  //Top right to bottom Left
+  if (grid[0][2] === "X" && grid[1][1] === "X") {
+    if (grid[2][0] === "E") {
+      placeAnO(2,0);
+    }
+  }
+
+  if (grid[0][2] === "X" && grid[2][0] === "X") {
+    if (grid[1][1] === "E") {
+      placeAnO(1,1);
+    }
+  }
+
+  if (grid[1][1] === "X" && grid[0][2] === "X") {
+    if (grid[0][2] === "E") {
+      placeAnO(0,2);
+    }
+  }
+
+  for (let y = 0; y < GRIDSIZE; y++) {
+    //Place an O if Player one is going to win straight across
+    if (grid[y][0] === "X" && grid[y][1] === "X") {
+      if (grid[y][2] === "E") {
+        placeAnO(y,2);
+      }
+    }
+
+    if (grid[y][0] === "X" && grid[y][2] === "X") {
+      if (grid[y][1] === "E") {
+        placeAnO(y,1);
+      }
+    }
+
+    if (grid[y][1] === "X" && grid[y][2] === "X") {
+      if (grid[y][0] === "E") {
+        placeAnO(y,0);
+      }
+    }
+  }
+
+  for (let x = 0; x < GRIDSIZE; x++) {
+    //Place an O if Player one is going to win straight down
+    if (grid[0][x] === "X" && grid[1][x] === "X") {
+      if (grid[2][x] === "E") {
+        placeAnO(2,x);
+      }
+    }
+
+    if (grid[0][x] === "X" && grid[2][x] === "X") {
+      if (grid[1][x] === "E") {
+        placeAnO(1,x);
+      }
+    }
+
+    if (grid[1][x] === "X" && grid[2][x] === "X") {
+      if (grid[0][x] === "E") {
+        placeAnO(0,x);
+      }
+    }
+  }
+
+  placeAnO(int(random(2)), int(random(2)));
+}
+
 function endGame() {
-  console.log("Endgame function triggered");
+  gameEnded = "filler";
+
+  console.log("Endgame function triggered"); //remove after debugging
 
   fill("Black");
   rect(0,0, width, height);
+
+  playAgainButton = createButton("Play Again?");
+  playAgainButton.position(width / 2, height / 2);
+  playAgainButton.size(width /4, height / 8);
+  playAgainButton.mousePressed(setup);
 
   textSize(width / 10);
   textAlign(CENTER, CENTER);
@@ -167,19 +270,20 @@ function mousePressed() {
   let cellX = floor(mouseX / cellWidth);
   let cellY = floor(mouseY / cellHeight);
 
-  if (isPlayerOnesTurn) {
-    placeAnX(cellX, cellY);
-  }
-
-  else {
-    if (isSecondPlayerHere) {
-      placeAnO(cellX, cellY);
+  if (gameEnded === false) {
+    if (isPlayerOnesTurn) {
+      placeAnX(cellX, cellY);
     }
+
     else {
-      computersTurn();
+      if (isSecondPlayerHere) {
+        placeAnO(cellX, cellY);
+      }
+      else {
+        computersTurn();
+      }
     }
   }
-
   //Checking if the game has ended
   checkIfGameHasEnded();
 
@@ -205,9 +309,6 @@ function placeAnO(cellX, cellY) {
   }
 }
 
-function computersTurn() {
-
-}
 
 function displayGrid() {
   for (let x=0; x < GRIDSIZE; x++) {
