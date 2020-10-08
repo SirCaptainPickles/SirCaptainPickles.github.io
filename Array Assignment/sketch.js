@@ -17,6 +17,11 @@ let gameEnded;
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
+  //Hide the play again button if Players are replaying
+  if (gameEnded === "filler") {
+    playAgainButton.hide();
+  }
+  
   //Create Empty Grid
   grid = [["E","E","E"], ["E","E","E"], ["E","E","E"]];
 
@@ -33,11 +38,6 @@ function setup() {
 
   //Loop the draw loop again if the game was ended previously
   loop();
-
-  //Hide the play again button if Players are replaying
-  if (gameEnded === "filler") {
-    playAgainButton.hide();
-  }
 
   //Displaying Opponent Buttons
   playTheComputerButton = createButton("Play Against the Computer");
