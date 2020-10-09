@@ -18,10 +18,10 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
 
   //Hide the play again button if Players are replaying
-  if (gameEnded === "filler") {
+  if (gameEnded === "Resetting Game") {
     playAgainButton.hide();
   }
-  
+
   //Create Empty Grid
   grid = [["E","E","E"], ["E","E","E"], ["E","E","E"]];
 
@@ -97,7 +97,7 @@ function startSecondPersonGame() {
 }
 
 function mousePressed() {
-
+  
   //Select Cell player is clicking on
   let cellX = floor(mouseX / cellWidth);
   let cellY = floor(mouseY / cellHeight);
@@ -114,7 +114,7 @@ function mousePressed() {
   }
 
   //If the computer is playing take player's turn and computer's turn
-  if (!gameEnded && !isSecondPlayerHere) {
+  if (!gameEnded && !isSecondPlayerHere && grid[cellY][cellX] === "E") {
     placeAnX(cellX, cellY);
     computersTurn();
   }
@@ -385,9 +385,9 @@ function computersTurn() {
   }
 
   //Randomly place an O 
-  for (let j = 0; j < 100; j++) {
-    let randomX = int(random(2));
-    let randomY = int(random(2));
+  for (let j = 0; j < 300; j++) {
+    let randomX = int(random(3));
+    let randomY = int(random(3));
 
     if (grid[randomY][randomX] === "E") {
       placeAnO(randomY, randomX);
@@ -397,9 +397,7 @@ function computersTurn() {
 }
 
 function endGame() {
-  //Cover grid
-  fill("Black");
-  rect(0,0, width, height);
+  gameEnded = "Resetting Game";
 
   //Display 'Play Agian' button
   playAgainButton = createButton("Play Again?");
@@ -429,7 +427,6 @@ function endGame() {
   }
 }
 
-
 function placeAnX(cellX, cellY) {
   if (grid[cellY][cellX] === "E") {
     grid[cellY][cellX] = "X";
@@ -443,7 +440,6 @@ function placeAnO(cellY, cellX) {
     isPlayerOnesTurn = !isPlayerOnesTurn;
   }
 }
-
 
 function displayGrid() {
   for (let x=0; x < GRIDSIZE; x++) {
@@ -467,4 +463,3 @@ function displayGrid() {
     }
   }
 }
-  
